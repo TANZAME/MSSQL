@@ -16,6 +16,7 @@ WHERE   session_id > 50 -- Ignore system spids.
         AND session_id NOT IN ( @@SPID ) -- Ignore this current statement.
 ORDER BY  sp.cpu desc,start_time desc
 
+
 -- =============================================
 -- Create date: <2014/4/18>
 -- Description: ²éÑ¯ºÄCPUµÄsqlÓï¾ä
