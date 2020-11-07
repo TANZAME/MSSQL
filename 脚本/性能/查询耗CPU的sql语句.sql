@@ -1,8 +1,8 @@
 
 -- 查看运行语句的CPU情况
 SELECT  DB_NAME(sp.dbid) as db_name, --数据库名称
-		sp.cpu,
-		er.cpu_time,
+		sp.cpu,-- 进程的累计cpu时间
+		er.cpu_time,--请求所使用的 CPU 时间
 		sp.physical_io,
 		er.wait_time,
         qt.text ,
