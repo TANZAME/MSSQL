@@ -1,0 +1,82 @@
+
+
+
+
+--判断Type是否存在，如果存在，重命名，随后之后才再删除，否则无法直接删除
+IF EXISTS (SELECT 1 FROM sys.types t join sys.schemas s on t.schema_id=s.schema_id 
+      and t.name='TmpSys_JoinKey' and s.name='dbo')
+ EXEC sys.sp_rename 'dbo.TmpSys_JoinKey', 'obsoleting_TmpSys_JoinKey';
+GO
+ 
+ 
+--重建TYPE，比如原来是四个字段，现在想修改为三个字段，或者原来有三个字段想加一个字段变成四个字段
+CREATE TYPE [dbo].[TmpSys_JoinKey] AS TABLE(
+	[Sequence] [int] NULL,
+	[IntKey1] [int] NULL,
+	[IntKey2] [int] NULL,
+	[IntKey3] [int] NULL,
+	[IntKey4] [int] NULL,
+	[IntKey5] [int] NULL,
+	[IntKey6] [int] NULL,
+	[LongKey1] [bigint] NULL,
+	[LongKey2] [bigint] NULL,
+	[LongKey3] [bigint] NULL,
+	[LongKey4] [bigint] NULL,
+	[LongKey5] [bigint] NULL,
+	[StringKey1] [nvarchar](512) NULL,
+	[StringKey2] [nvarchar](512) NULL,
+	[StringKey3] [nvarchar](512) NULL,
+	[StringKey4] [nvarchar](512) NULL,
+	[StringKey5] [nvarchar](512) NULL,
+	[StringKey6] [nvarchar](512) NULL,
+	[StringKey7] [nvarchar](512) NULL,
+	[StringKey8] [nvarchar](512) NULL,
+	[StringKey9] [nvarchar](512) NULL,
+	[StringKey10] [nvarchar](512) NULL,
+	[StringKey11] [nvarchar](512) NULL,
+	[StringKey12] [nvarchar](512) NULL,
+	[StringKey13] [nvarchar](512) COLLATE Chinese_PRC_90_CI_AS_SC NULL,
+	[StringKey14] [nvarchar](512) COLLATE Chinese_PRC_90_BIN NULL,
+	[StringKey15] [nvarchar](512) COLLATE Chinese_PRC_CS_AS NULL,
+	[MaxKey1] [nvarchar](max) NULL,
+	[MaxKey2] [nvarchar](max) NULL,
+	[MaxKey3] [nvarchar](max) NULL,
+	[DecimalKey1] [decimal](18, 2) NULL,
+	[DecimalKey2] [decimal](18, 2) NULL,
+	[DecimalKey3] [decimal](18, 2) NULL,
+	[DecimalKey4] [decimal](18, 2) NULL,
+	[DecimalKey5] [decimal](18, 2) NULL,
+	[DateKey1] [datetime] NULL,
+	[DateKey2] [datetime] NULL,
+	[DateKey3] [datetime] NULL,
+	[DateKey4] [datetime] NULL,
+	[DateKey5] [datetime] NULL
+)
+GO
+ 
+--将原来引用将要删除的TYPE全部重建一遍，否则原始存储过程会报错
+DECLARE @Name NVARCHAR(500);
+DECLARE REF_CURSOR CURSOR FOR
+SELECT referencing_schema_name + '.' + referencing_entity_name
+FROM sys.dm_sql_referencing_entities('dbo.TmpSys_JoinKey', 'TYPE');
+ OPEN REF_CURSOR;
+ FETCH NEXT FROM REF_CURSOR INTO @Name;
+ WHILE (@@FETCH_STATUS = 0)
+ BEGIN
+  EXEC sys.sp_refreshsqlmodule @name = @Name;
+  FETCH NEXT FROM REF_CURSOR INTO @Name;
+ END;
+CLOSE REF_CURSOR;
+DEALLOCATE REF_CURSOR;
+GO
+ 
+--最后删除原始的被重命名的TableType(被第一步重名的那个)
+IF EXISTS (SELECT 1 FROM sys.types t 
+   join sys.schemas s on t.schema_id=s.schema_id 
+   and t.name='obsoleting_TmpSys_JoinKey' and s.name='dbo')
+ DROP TYPE dbo.obsoleting_TmpSys_JoinKey
+GO
+ 
+--最后执行授权
+GRANT EXECUTE ON TYPE::dbo.TmpSys_JoinKey TO public
+GO
