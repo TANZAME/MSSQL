@@ -5,7 +5,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/xiaohuazi123/mssql-script.svg?label=Stars&logo=github "stars")](https://github.com/xiaohuazi123/mssql-script)
   
 
-mssql脚本汇总
+SqlServer 脚本汇总
 
 
 
