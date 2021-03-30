@@ -65,3 +65,29 @@ ORDER BY CAST(REPLACE([tbspinfo].[reserved], 'KB', '') AS INT) DESC
 
 DROP TABLE [#tablespaceinfo]
 DROP TABLE [#tmptb]
+
+
+
+
+declare @UserTables TABLE(ID INT IDENTITY(1,1),TableName nvarchar(100))
+declare @TableSpace TABLE(TableName nvarchar(100),[Rows] INT,Reserved nvarchar(64),[Data] nvarchar(64),IndexSize nvarchar(64),Unused nvarchar(64),DataValue BIGINT)
+
+insert into @UserTables(TableName)
+select name from sys.tables where type = 'u'
+
+DECLARE @TableName NVARCHAR(64)
+declare @Index INT =1
+DECLARE @RowCount INT 
+SELECT @RowCount = COUNT(*) FROM @UserTables
+WHILE(@Index <= @RowCount)
+BEGIN
+	select TOP 1 @TableName = TableName From @UserTables where ID = @Index
+	insert into @TableSpace(TableName,[Rows],Reserved,[Data],IndexSize,Unused)
+	exec sp_spaceused @TableName
+
+ SET @Index=@Index+1
+END
+
+UPDATE @TableSpace set DataValue = CAST(LEFT([Data],LEN([Data]) - 3) as bigint)
+select * from  @TableSpace
+order by DataValue desc
