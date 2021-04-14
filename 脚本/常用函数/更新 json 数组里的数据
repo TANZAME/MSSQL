@@ -1,0 +1,41 @@
+
+declare @Client TABLE(ID INT IDENTITY(1,1),ClientId INT,AmzAuthorizationJSON nvarchar(max))
+insert into @Client(ClientId,AmzAuthorizationJSON)
+select ClientId,AmzAuthorizationJSON 
+from Bas_Client
+where ISNULL(AmzAuthorizationJSON,'') <> '' and ISJSON(AmzAuthorizationJSON)=1
+ 
+
+declare @RowIndex INT,@RowCount INT
+declare @ClientID int ,@AmzAuthorizationJSON nvarchar(max)
+declare @CTE TABLE([key] int,[value] nvarchar(max),[type] int)
+
+select @RowIndex=1,@RowCount=COUNT(1) FROM @Client
+while(@RowIndex<=@RowCount)
+begin
+
+	select @ClientID=ClientID,@AmzAuthorizationJSON=AmzAuthorizationJSON
+	from @Client
+	where ID=@RowIndex
+
+	if(ISNULL(@AmzAuthorizationJSON,'') <> '' and ISJSON(@AmzAuthorizationJSON)=1)
+	begin
+	
+		delete from @CTE
+		insert into @CTE([key],[value],[type])
+		SELECT [key],[value],[type]
+		from OPENJSON(@AmzAuthorizationJSON) a
+
+		update @CTE set [value]=JSON_MODIFY([value],'$.MWSToken','')
+		update @CTE set [value]=JSON_MODIFY([value],'$.AWSToken','')
+
+		update Bas_Client set AmzAuthorizationJSON=
+			JSON_QUERY('[' + STUFF((select ','+[value] from @CTE for xml path('')),1,1,'') + ']')
+		where ClientId = @ClientID
+
+	end
+
+	set @RowIndex=@RowIndex+1
+
+end
+
