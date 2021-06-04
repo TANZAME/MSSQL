@@ -1,0 +1,11 @@
+select total_elapsed_time / execution_count 平均时间,total_logical_reads/execution_count 逻辑读,
+usecounts 重用次数,SUBSTRING(d.text, (statement_start_offset/2) + 1,
+         ((CASE statement_end_offset
+          WHEN -1 THEN DATALENGTH(text)
+          ELSE statement_end_offset END
+            - statement_start_offset)/2) + 1) 语句执行 from sys.dm_exec_cached_plans a
+cross apply sys.dm_exec_query_plan(a.plan_handle) c
+,sys.dm_exec_query_stats b
+cross apply sys.dm_exec_sql_text(b.sql_handle) d
+where a.plan_handle=b.plan_handle and total_logical_reads/execution_count>4000
+ORDER BY total_elapsed_time / execution_count DESC;
