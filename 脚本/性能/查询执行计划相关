@@ -9,3 +9,17 @@ cross apply sys.dm_exec_query_plan(a.plan_handle) c
 cross apply sys.dm_exec_sql_text(b.sql_handle) d
 where a.plan_handle=b.plan_handle and total_logical_reads/execution_count>4000
 ORDER BY total_elapsed_time / execution_count DESC;
+
+
+
+
+select p.*,[sqltext].[text]
+FROM sys.dm_exec_cached_plans p
+OUTER APPLY sys.dm_exec_sql_text(p.plan_handle) sqltext
+可以用下面的脚本来查看缓存对象的对应内存数。
+SELECT objtype AS 'Cached Object Type',
+COUNT(*) AS 'Number of Plans',
+SUM(CAST(size_in_bytes AS BIGINT))/1024/1024 AS 'Plan Cache Size(MB)',
+AVG(usecounts) AS 'Avg Use Count'
+FROM sys.dm_exec_cached_plans
+GROUP BY objtype
