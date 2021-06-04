@@ -10,7 +10,11 @@ select      type
 from    sys.dm_os_memory_clerks
 group by type
 order by type
-
+查询结果中：
+--CACHESTORE_OBJCP：存储过程、函数等的执行计划
+--CACHESTORE_SQLCP：SQL语句的执行计划
+--MEMORYCLERK_SQLBUFFERPOOL：Buffer pool
+--OBJECTSTORE_LOCK_MANAGER：锁
 
 -- 查询当前数据库缓存的所有数据页面，哪些数据表，缓存的数据页面数量
 -- 从这些信息可以看出，系统经常要访问的都是哪些表，有多大？
