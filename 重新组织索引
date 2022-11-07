@@ -1,7 +1,0 @@
-alter index all on Amz_AdGroupBidKwHourReport reorganize
-alter index all on Amz_AdGroupHourReport reorganize
-alter index all on Amz_AdGroupPATHourReport reorganize
-alter index all on Amz_CampaignHourReport reorganize
-alter index all on Amz_CampaignPosHourReport reorganize
-alter index all on Amz_PortfolioHourReport reorganize
-alter index all on Amz_ProductAdHourReport reorganize
